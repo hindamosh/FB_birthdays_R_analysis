@@ -1,0 +1,115 @@
+---
+title: "FB friends Birthday"
+author: "Hindam"
+date: "January 13, 2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+# read csv file:
+df <- read.csv("Friends' Birthdays.csv",header =T, check.names = F, row.names = NULL)
+```
+```{r}
+#View the data and take some insights
+View(df)
+dim(df)
+
+```
+```{r}
+# remove the duplicated row
+df <- df[-c(1), ] 
+View(df)
+```
+
+```{r}
+# remove the un_necessary columns
+df<- df[-c(3:17)]
+View(df)
+```
+
+```{r}
+# final dimension needed
+dim(df)
+```
+```{r}
+# adjust the title column by removing the ('s birthday)
+df$title <- gsub("'s birthday","",df$title)
+View(df)
+```
+Now time to extract the needed data of birthdate, first things first
+```{r}
+# extract the day and month from the date
+df$new_date <- strptime(df$date,"%m/%d/%Y")
+typeof(df$date)
+typeof(df$new_date)
+```
+
+```{r}
+# import packages
+library(lubridate)
+
+
+# set a new column for the month
+df$month <- month(as.POSIXlt(df$new_date, format="%m/%d/%Y"))
+View(df)
+```
+Same we will do for the day
+```{r}
+# set a new column for the day
+df$day <- day(as.POSIXlt(df$new_date, format="%m/%d/%Y"))
+View(df)
+```
+
+```{r}
+# Let's zoom for the needed data
+df<- df[-c(2,3)]
+View(df)
+```
+
+
+Now to the fun part
+
+# 1. How many people have the same birthday as you?
+```{r}
+subset(df, df$month== 7 & df$day == 29)
+```
+#### Answer : is 3 , but the fun fact here that these other two are my own facebook accounts :)
+
+# 2. Which month contains the most number of birthdays?
+```{r}
+library(ggplot2)
+qplot(x=month, data= df, binwidth=1,
+      color=I("black"), fill=I("blue"))+
+  scale_x_continuous(limits = c(0,13), breaks = seq(0,13,1))
+```
+#### Answer : March
+
+# 3. How many birthdays are in each month?
+```{r}
+bpm <-table(df$month)
+plot(bpm, type = "h", xlab = "Month", ylab = "Frequency",
+     main = "Number of birthdays in each month", col="blue",lwd = 15)
+```
+
+# 4. Which day of the year has the most number of birthdays?
+```{r}
+bpd <- table(df$day)
+plot(bpd, type = "h", xlab = "Day", ylab = "Frequency",
+     main = "Number of birthdays in each Day", col="purple",lwd = 15)
+```
+
+
+# 5. Do you have at least 365 friends that have birthdays on everyday of the year?
+
+```{r}
+qplot(x= month, data= df, binwidth=1,
+      color=I("white"), fill= I("orange"))+
+  scale_x_continuous(limits = c(0,13), breaks = seq(1,12,1))+
+  facet_wrap(day~.)
+
+```
+
+
+
